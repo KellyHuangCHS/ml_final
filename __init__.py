@@ -61,7 +61,7 @@ scores = list()
 for kernel in parameters['kernel']:
     for gamma in parameters['gamma']:
         for C in parameters['C']:
-            clf = svm.SVC(C=C)
+            clf = svm.SVC(C=C, kernel=kernel, gamma=gamma)
             score = cross_val_score(clf, X_train, y_train, cv=5, scoring="accuracy")
             this_score = np.mean(score)
             scores.append(this_score)
