@@ -43,7 +43,7 @@ def get_parameters():
     parameters = {'C':[], 'gamma': []}
     for i in range(1, 6):
         parameters['C'].append(i)
-    for j in range(1, 10)
+    for j in range(1, 10):
         parameters['gamma'].append(np.random.rand())
 
     return parameters
