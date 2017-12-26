@@ -37,7 +37,17 @@ def draw_points():
 # draw_points()
 
 # 自带的grid_search，kfold=5
-parameters = {'kernel':('poly', 'rbf'), 'C':[1, 2, 3, 4, 5], 'gamma':[0.125, 0.25, 0.5 ,1, 2, 4]}
+# parameters = {'C':[1, 2, 3, 4, 5], 'gamma':[0.125, 0.25, 0.33, 0.5 ,1, 2, 4]}
+
+def get_parameters():
+    parameters = {'C':[], 'gamma': []}
+    for i in range(1, 6):
+        parameters['C'].append(i)
+    for j in range(1, 10)
+        parameters['gamma'].append(np.random.rand())
+
+    return parameters
+
 # print(parameters['kernel'], parameters['C'], parameters['gamma'])
 # svc = svm.SVC()
 # clf = GridSearchCV(svc, parameters, cv=5)
@@ -58,22 +68,27 @@ parameters = {'kernel':('poly', 'rbf'), 'C':[1, 2, 3, 4, 5], 'gamma':[0.125, 0.2
 best_score = 0.0
 best_parameters = {}
 scores = list()
-for kernel in parameters['kernel']:
-    for gamma in parameters['gamma']:
-        for C in parameters['C']:
-            clf = svm.SVC(C=C, kernel=kernel, gamma=gamma)
-            score = cross_val_score(clf, X_train, y_train, cv=5, scoring="accuracy")
-            this_score = np.mean(score)
-            scores.append(this_score)
-            print('kernel: %s, gamma: %f, C: %f Accuracy mean: %f' % (kernel, gamma, C, this_score,))
-            if(this_score > best_score):
-                best_parameters['kernel'] = kernel
-                best_parameters['gamma'] = gamma
-                best_parameters['C'] = C
-                best_score = this_score
+# for gamma in parameters['gamma']:
+parameters = get_parameters()
+print(parameters)
+for gamma in parameters['gamma']:
+    for C in parameters['C']:
+        clf = svm.SVC(C=C, gamma=gamma)
+        # clf = svm.SVC(C=C)
+        score = cross_val_score(clf, X_train, y_train, cv=5, scoring="accuracy")
+        this_score = np.mean(score)
+        scores.append(this_score)
+        print('gamma: %f, C: %f Accuracy mean: %f' % (gamma, C, this_score,))
+        # print('C: %f Accuracy mean: %f' % (C, this_score,))
+        if(this_score > best_score):
+            best_parameters['gamma'] = gamma
+            best_parameters['C'] = C
+            best_score = this_score
 
 print(best_parameters)
-clf = svm.SVC(C=best_parameters['C'], kernel=best_parameters['kernel'], gamma=best_parameters['gamma'])
+clf = svm.SVC(C=best_parameters['C'], gamma=best_parameters['gamma'])
+# clf = svm.SVC(C=best_parameters['C'])
+print(clf)
 clf.fit(X_train, y_train)
 y_test_pred = clf.predict(X_test)
 num_correct = np.sum(y_test_pred == y_test)
