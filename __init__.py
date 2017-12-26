@@ -5,8 +5,6 @@ from sklearn.model_selection import cross_val_score, KFold, GridSearchCV
 from sklearn import svm
 from mpl_toolkits.mplot3d import Axes3D
 
-from classifiers.linear_classifier import LinearSVM
-
 test_dir = './datasets/Testing-set-label.csv'
 training_dir = './datasets/Training-set.csv'
 
@@ -39,40 +37,43 @@ def draw_points():
 # draw_points()
 
 # 自带的grid_search，kfold=5
-# parameters = {'kernel':('poly', 'rbf'), 'C':[1, 2, 4], 'gamma':[0.125, 0.25, 0.5 ,1, 2, 4]}
+parameters = {'kernel':('poly', 'rbf'), 'C':[1, 2, 3, 4, 5], 'gamma':[0.125, 0.25, 0.5 ,1, 2, 4]}
+# print(parameters['kernel'], parameters['C'], parameters['gamma'])
 # svc = svm.SVC()
 # clf = GridSearchCV(svc, parameters, cv=5)
 # clf.fit(X_train, y_train)
+#
+# cv_result = pd.DataFrame.from_dict(clf.cv_results_)
+# with open('cv_result.csv', 'w') as f:
+#     cv_result.to_csv(f)
+# print("Best parameters: ")
+# print(clf.best_params_)
+#
 # y_test_pred = clf.predict(y_test)
 # num_correct = np.sum(y_test_pred == y_test)
 # acc = float(num_correct)/len(y_test)
 # print('Test data got %d / %d = %f accuracy'%(num_correct, len(y_test), acc))
 
 # 交叉验证5次得出训练模型，选出最好的超参数对test进行训练
-C_choice = [1.0, 2.0, 3.0, 4.0, 5.0]
-gamma_choice = [0.125, 0.25, 1, 2, 4]
-kernel_chioce = ['poly', 'rbf']
-C_to_scores = {}
-best_C = 0.0
-best_gamma = 0.0
-best_kernel = ''
 best_score = 0.0
-for kernel in kernel_chioce:
-    for gamma in gamma_choice:
-        for C in C_choice:
+best_parameters = {}
+scores = list()
+for kernel in parameters['kernel']:
+    for gamma in parameters['gamma']:
+        for C in parameters['C']:
             clf = svm.SVC(C=C)
-            scores = cross_val_score(clf, X_train, y_train, cv=5, scoring="accuracy")
-            this_scores = np.mean(scores)
-            C_to_scores[C] = this_scores
-            print('kernel: %s, gamma: %f, C: %f Accuracy mean: %f' % (kernel, gamma, C, this_scores,))
-            if(this_scores > best_score):
-                best_C = C
-                best_gamma = gamma
-                best_kernel = kernel
-                best_score = this_scores
+            score = cross_val_score(clf, X_train, y_train, cv=5, scoring="accuracy")
+            this_score = np.mean(score)
+            scores.append(this_score)
+            print('kernel: %s, gamma: %f, C: %f Accuracy mean: %f' % (kernel, gamma, C, this_score,))
+            if(this_score > best_score):
+                best_parameters['kernel'] = kernel
+                best_parameters['gamma'] = gamma
+                best_parameters['C'] = C
+                best_score = this_score
 
-print(best_C, best_kernel, best_gamma)
-clf = svm.SVC(C=best_C, kernel=best_kernel, gamma=best_gamma)
+print(best_parameters)
+clf = svm.SVC(C=best_parameters['C'], kernel=best_parameters['kernel'], gamma=best_parameters['gamma'])
 clf.fit(X_train, y_train)
 y_test_pred = clf.predict(X_test)
 num_correct = np.sum(y_test_pred == y_test)
